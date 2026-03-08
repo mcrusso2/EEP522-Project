@@ -48,9 +48,10 @@ void I2C_writeByte(int reg, int val);
 #define PAJ_COUNT_CLOCKWISE		0x80
 #define PAJ_WAVE				0x100
 //Initialize array size
-#define Init_Array sizeof(Init_Register_Array)/2
-#define PS_Array_SIZE sizeof(Init_PS_Array)/2
-#define Gesture_Array_SIZE sizeof(Init_Gesture_Array)/2
+#define Init_Array 53
+#define Gesture_Array_SIZE 30
 
+extern const unsigned char Init_Gesture_Array[][2];
+extern unsigned char Init_Register_Array[][2];
 
 #endif
