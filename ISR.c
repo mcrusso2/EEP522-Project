@@ -169,21 +169,31 @@ int main(void) {
 		int sensor_data = I2C_readU16( PAJ_INT_FLAG1);
 		if(sensor_data){
 			printf("Sensor data: %d\n", sensor_data);
-			switch (sensor_data)
-				{
-					case PAJ_UP:			    printf("Up\r\n");				break;
-					case PAJ_DOWN:				printf("Down\r\n");				break;
-					case PAJ_LEFT:				printf("Left\r\n");				break;
-					case PAJ_RIGHT:				printf("Right\r\n"); 			break;
-					case PAJ_FORWARD:			printf("Forward\r\n");			break;
-					case PAJ_BACKWARD:			printf("Backward\r\n"); 		break;
-					case PAJ_CLOCKWISE:			printf("Clockwise\r\n"); 		break;
-					case PAJ_COUNT_CLOCKWISE:	printf("AntiClockwise\r\n"); 	break;
-					case PAJ_WAVE:				printf("Wave\r\n"); 			break;
-					default: break;
-				}
+			switch (sensor_data){
+				case PAJ_UP:			    printf("Up\r\n");				break;
+				case PAJ_DOWN:				printf("Down\r\n");				break;
+				case PAJ_LEFT:				printf("Left\r\n");				break;
+				case PAJ_RIGHT:				printf("Right\r\n"); 			break;
+				case PAJ_FORWARD:			printf("Forward\r\n");			break;
+				case PAJ_BACKWARD:			printf("Backward\r\n"); 		break;
+				case PAJ_CLOCKWISE:			printf("Clockwise\r\n"); 		break;
+				case PAJ_COUNT_CLOCKWISE:	printf("AntiClockwise\r\n"); 	break;
+				case PAJ_WAVE:				printf("Wave\r\n"); 			break;
+				default: break;
+			}
+
+			if(sensor_data & PAJ_UP){//increase volume
+				// wpctl set-volume 83 0.1+
+				system("wpctl set-volume 83 0.05+");
+
+			}
+			else if(sensor_data & PAJ_DOWN){//decrease volume
+				// wpctl set-volume 83 0.05-
+				system("wpctl set-volume 83 0.05-");
+			}
+
 			sensor_data=0;
-			delay(50);
+			// delay(50);
 		}
 
 	}
