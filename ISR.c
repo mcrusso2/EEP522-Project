@@ -27,7 +27,7 @@
 #define PIN 11
 #define PIN13 13
 
-#define SENSOR_ADDR 0x48
+#define SENSOR_ADDR 0x73
 
 
 // How much time a change must be since the last in order to count as a change
