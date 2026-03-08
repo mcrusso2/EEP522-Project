@@ -1,12 +1,18 @@
 #ifndef _PAJ7620U2_
 #define _PAJ7620U2_
 
+unsigned char PAJ7620U2_init();
+char I2C_readByte(int reg);
+unsigned short I2C_readU16(int reg);
+void I2C_writeByte(int reg, int val);
+
+
 //i2c address
 #define PAJ7620U2_I2C_ADDRESS	0x73
 //Register Bank select
 #define PAJ_BANK_SELECT			0xEF		/*Bank0=0x00,Bank1=0x01*/
 //Register Bank 0
-#define PAJ_SUSPEND			 	0x03		/*I2C suspend command (Write 0x01 to enter suspend state). I2C wake-up command is slave ID wake-up. Refer to topic ¡°I2C Bus Timing Characteristics and Protocol¡±*/
+#define PAJ_SUSPEND			 	0x03		/*I2C suspend command (Write 0x01 to enter suspend state). I2C wake-up command is slave ID wake-up. Refer to topic ï¿½ï¿½I2C Bus Timing Characteristics and Protocolï¿½ï¿½*/
 #define PAJ_INT_FLAG1_MASK		0x41		/*Gesture detection interrupt flag mask*/
 #define PAJ_INT_FLAG2_MASK		0x42		/*Gesture/PS detection interrupt flag mask*/
 #define PAJ_INT_FLAG1		    0x43		/*Gesture detection interrupt flag*/
