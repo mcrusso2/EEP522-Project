@@ -119,11 +119,12 @@ int main(void) {
 
 
 
-	int sensor = wiringPiI2CSetup();
+	int sensor = wiringPiI2CSetup(SENSOR_ADDR);
 	if(sensor == -1) {
 		printf("Failed to init I2C communication.\n");
 		return -1;
 	}
+	printf("I2C communication successfully setup.\n");
 
 
 
