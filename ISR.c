@@ -154,14 +154,7 @@ int main(void) {
 	//putting timer code here
 	// signal(SIGALRM, handler);
 
-
-
-	// int sensor = wiringPiI2CSetup(SENSOR_ADDR);
-	// if(sensor == -1) {
-	// 	printf("Failed to init I2C communication.\n");
-	// 	return -1;
-	// }
-	// printf("I2C communication successfully setup.\n");
+	int btID = grabID();
 
 
 	if(!PAJ7620U2_init())
@@ -213,12 +206,19 @@ int main(void) {
 
 			if(sensor_data & PAJ_UP){//increase volume
 				// wpctl set-volume 83 0.1+
-				system("wpctl set-volume 83 0.1+");
+				// system("wpctl set-volume 83 0.1+");
+				//use btID instead of hardcoding 83
+				char command[256];
+				snprintf(command, sizeof(command), "wpctl set-volume %d 0.1+", btID);
+				system(command);
 
 			}
 			else if(sensor_data & PAJ_DOWN){//decrease volume
 				// wpctl set-volume 83 0.05-
-				system("wpctl set-volume 83 0.05-");
+				// system("wpctl set-volume 83 0.05-");
+				char command[256];
+				snprintf(command, sizeof(command), "wpctl set-volume %d 0.05-", btID);
+				system(command);
 			}
 
 			sensor_data=0;
