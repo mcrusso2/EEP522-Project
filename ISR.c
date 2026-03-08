@@ -17,6 +17,8 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
 #include <sys/time.h>
 #include <wiringPi.h>
 #include <unistd.h>
@@ -87,7 +89,33 @@ void handler(int signum) {
 
 }
 
+int grabID() {
+	char output[256];
+	FILE *fp = popen("wpctl status | grep Astronaut | grep vol", "r");
+	if (!fp) {
+		printf("Failed to run command\n");
+		return -1;
+	}
 
+	int id = -1;
+
+	while (fgets(output, sizeof(output)-1, fp)) {
+		//printf("%s\n", output);
+
+		// Extract the first integer in the line
+		char *p = output;
+		while (*p && !isdigit(*p)) p++;   // skip until digit
+
+		if (*p) {
+			id = strtol(p, NULL, 10);
+		}
+	}
+
+	pclose(fp);
+
+	printf("ID: %d\n", id);
+	return id;
+}
 
 
 
@@ -115,6 +143,7 @@ int main(void) {
 	else {
 		printf("Started! Initial state is off\n");
 	}
+
 
 
 	//setup timer interrupt
@@ -184,7 +213,7 @@ int main(void) {
 
 			if(sensor_data & PAJ_UP){//increase volume
 				// wpctl set-volume 83 0.1+
-				system("wpctl set-volume 83 0.05+");
+				system("wpctl set-volume 83 0.1+");
 
 			}
 			else if(sensor_data & PAJ_DOWN){//decrease volume
