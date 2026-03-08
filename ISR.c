@@ -146,7 +146,7 @@ int main(void) {
 	// Waste time but not CPU
 	while(1){
 		
-		int sensor_data = wiringPiI2CRead(sensor);
+		int sensor_data = wiringPiI2CReadReg8(sensor, 0x43);
 		printf("Sensor data: %d\n", sensor_data);
 		sleep(1);
 
