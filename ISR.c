@@ -23,7 +23,6 @@
 #include <signal.h>
 #include "wiringPiI2C.h"
 #include "PAJ7620U2.h"
-int fd;
 
 // Which GPIO pin we're using. For this program we'll use physical pin numbers.
 #define PIN 11
