@@ -204,12 +204,23 @@ int main(void) {
 				default: break;
 			}
 
-			if(sensor_data & PAJ_UP){//increase volume
+			if(sensor_data & PAJ_FORWARD){//play song
+				// system("mpg123 -q /home/pi/EEP522-Project/Playlist/Memories\ Of\ Tokyo-To\ -\ 07\ -\ Jet\ Set\ Classic\ \(Interlude\)\ \[OFFICIAL\].mp3");
+				char command[256];
+				snprintf(command, sizeof(command), "mpg123 -q /Playlist/*.mp3");
+				system(command);
+			}
+
+			else if(sensor_data & PAJ_RIGHT){//next song
+				system("f");
+			}
+
+			else if(sensor_data & PAJ_UP){//increase volume
 				// wpctl set-volume 83 0.1+
 				// system("wpctl set-volume 83 0.1+");
 				//use btID instead of hardcoding 83
 				char command[256];
-				snprintf(command, sizeof(command), "wpctl set-volume %d 0.1+", btID);
+				snprintf(command, sizeof(command), "wpctl set-volume %d 0.1+ -l 1.0", btID);
 				system(command);
 
 			}
