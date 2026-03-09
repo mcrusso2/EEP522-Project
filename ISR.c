@@ -91,6 +91,7 @@ void handler(int signum) {
 
 }
 FILE *mpg_in = NULL;
+FILE *mpg_out = NULL;
 
 #define MAX_TRACKS 256
 
@@ -152,7 +153,7 @@ int grabID() {
 
 	int id = -1;
 
-	while (fgets(output, sizeof(output)-1, fp)) {
+	while (fgets(output, sizeof(output), fp)) {
 		//printf("%s\n", output);
 
 		// Extract the first integer in the line
@@ -175,6 +176,7 @@ int grabID() {
 
 int main(void) {
 
+	char buf[1024];
 
 	// Init  -- use the physical pin number on RPi P1 connector
 	wiringPiSetupPhys();
@@ -237,61 +239,117 @@ int main(void) {
 
 	// system("mpg123 -q ")
 
-	start_player();
+	int inpipe[2];
+	int outpipe[2];
+	
+	pipe(inpipe);
+	pipe(outpipe);
+	
+	pid_t pid = fork();
+	if(pid<0){
+		perror("fork fail");
+		exit(1);
+		}
+	
+	else if(pid == 0){//child
+		dup2(outpipe[0], STDIN_FILENO);
+		dup2(inpipe[1], STDOUT_FILENO);
+
+		close(outpipe[1]);
+		close(outpipe[0]);
+		close(inpipe[1]);
+		close(inpipe[0]);
+
+		execlp("mpg123", "mpg123", "-R", NULL);
+		perror("execlp failed");
+		exit(1);
+
+	}
+	else{
+		close(outpipe[0]);
+		close(inpipe[1]);
+
+	
+		mpg_out = fdopen(inpipe[0], "r");  // read from mpg123
+		mpg_in  = fdopen(outpipe[1], "w"); // write to mpg123
+
+	}
+
+	// start_player();
     load_playlist();
 
 	// Waste time but not CPU
 	while(1){
-		
-		int sensor_data = I2C_readU16( PAJ_INT_FLAG1);
-		if(sensor_data){
-			printf("Sensor data: %d\n", sensor_data);
-			switch (sensor_data){
-				case PAJ_UP:			    printf("Up\r\n");				break;
-				case PAJ_DOWN:				printf("Down\r\n");				break;
-				case PAJ_LEFT:				printf("Left\r\n");				break;
-				case PAJ_RIGHT:				printf("Right\r\n"); 			break;
-				case PAJ_FORWARD:			printf("Forward\r\n");			break;
-				case PAJ_BACKWARD:			printf("Backward\r\n"); 		break;
-				case PAJ_CLOCKWISE:			printf("Clockwise\r\n"); 		break;
-				case PAJ_COUNT_CLOCKWISE:	printf("AntiClockwise\r\n"); 	break;
-				case PAJ_WAVE:				printf("Wave\r\n"); 			break;
-				default: break;
+
+		if(fgets(buf, sizeof(buf), mpg_out) != NULL) {
+
+			// fgets(buf, sizeof(buf), mpg_out);
+			// Check for @P messages
+			if (buf[0] == '@' && buf[1] == 'P') {
+				int status = -1;
+				sscanf(buf, "@P %d", &status);
+
+				if (status == 0) {
+					// Track ended ? load next
+					next_track();
+				}
+			}
+			
+			int sensor_data = I2C_readU16( PAJ_INT_FLAG1);
+			if(sensor_data){
+				printf("Sensor data: %d\n", sensor_data);
+				switch (sensor_data){
+					case PAJ_UP:			    printf("Up\r\n");				break;
+					case PAJ_DOWN:				printf("Down\r\n");				break;
+					case PAJ_LEFT:				printf("Left\r\n");				break;
+					case PAJ_RIGHT:				printf("Right\r\n"); 			break;
+					case PAJ_FORWARD:			printf("Forward\r\n");			break;
+					case PAJ_BACKWARD:			printf("Backward\r\n"); 		break;
+					case PAJ_CLOCKWISE:			printf("Clockwise\r\n"); 		break;
+					case PAJ_COUNT_CLOCKWISE:	printf("AntiClockwise\r\n"); 	break;
+					case PAJ_WAVE:				printf("Wave\r\n"); 			break;
+					default: break;
+				}
+
+				if(sensor_data & PAJ_FORWARD){//play song
+					// // system("mpg123 -q /home/pi/EEP522-Project/Playlist/Memories\ Of\ Tokyo-To\ -\ 07\ -\ Jet\ Set\ Classic\ \(Interlude\)\ \[OFFICIAL\].mp3");
+					// char command[256];
+					// snprintf(command, sizeof(command), "mpg123 -q /Playlist/*.mp3");
+					// system(command);
+					play_current_track();
+				}
+
+				else if(sensor_data & PAJ_BACKWARD){//next song
+					next_track();
+				}
+
+				else if(sensor_data & PAJ_UP){//increase volume
+					// wpctl set-volume 83 0.1+
+					// system("wpctl set-volume 83 0.1+");
+					//use btID instead of hardcoding 83
+					char command[256];
+					snprintf(command, sizeof(command), "wpctl set-volume %d 0.1+ -l 1.0", btID);
+					system(command);
+
+				}
+				else if(sensor_data & PAJ_DOWN){//decrease volume
+					// wpctl set-volume 83 0.05-
+					// system("wpctl set-volume 83 0.05-");
+					char command[256];
+					snprintf(command, sizeof(command), "wpctl set-volume %d 0.05-", btID);
+					system(command);
+				}
+
+				sensor_data=0;
+				// delay(50);
 			}
 
-			if(sensor_data & PAJ_FORWARD){//play song
-				// // system("mpg123 -q /home/pi/EEP522-Project/Playlist/Memories\ Of\ Tokyo-To\ -\ 07\ -\ Jet\ Set\ Classic\ \(Interlude\)\ \[OFFICIAL\].mp3");
-				// char command[256];
-				// snprintf(command, sizeof(command), "mpg123 -q /Playlist/*.mp3");
-				// system(command);
-				play_current_track();
-			}
-
-			else if(sensor_data & PAJ_BACKWARD){//next song
-				next_track();
-			}
-
-			else if(sensor_data & PAJ_UP){//increase volume
-				// wpctl set-volume 83 0.1+
-				// system("wpctl set-volume 83 0.1+");
-				//use btID instead of hardcoding 83
-				char command[256];
-				snprintf(command, sizeof(command), "wpctl set-volume %d 0.1+ -l 1.0", btID);
-				system(command);
-
-			}
-			else if(sensor_data & PAJ_DOWN){//decrease volume
-				// wpctl set-volume 83 0.05-
-				// system("wpctl set-volume 83 0.05-");
-				char command[256];
-				snprintf(command, sizeof(command), "wpctl set-volume %d 0.05-", btID);
-				system(command);
-			}
-
-			sensor_data=0;
-			// delay(50);
 		}
 
+		else{
+			perror("Failed to read from mpg123");
+			break;
+		}
 	}
 }
 
