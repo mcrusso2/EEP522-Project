@@ -17,6 +17,8 @@
 */
 
 #include <stdio.h>
+#include <string.h>
+#include <dirent.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <sys/time.h>
@@ -87,6 +89,57 @@ void handle(void) {
 void handler(int signum) {
 
 
+}
+FILE *mpg_in = NULL;
+
+#define MAX_TRACKS 256
+
+char *playlist[MAX_TRACKS];
+int playlist_count = 0;
+int current_index = 0;
+
+
+void start_player() {
+    // Start mpg123 in remote control mode
+    mpg_in = popen("mpg123 -R", "w");
+    if (!mpg_in) {
+        perror("Failed to start mpg123");
+        exit(1);
+    }
+}
+
+void load_playlist() {
+    DIR *dir;
+    struct dirent *entry;
+
+    dir = opendir("Playlist");
+    if (!dir) {
+        perror("Cannot open Playlist directory");
+        return;
+    }
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (strstr(entry->d_name, ".mp3")) {
+            char *path = malloc(512);
+            snprintf(path, 512, "Playlist/%s", entry->d_name);
+            playlist[playlist_count++] = path;
+        }
+    }
+
+    closedir(dir);
+
+
+}
+
+void play_current_track() {
+    fprintf(mpg_in, "LOAD %s\n", playlist[current_index]);
+    fflush(mpg_in);
+}
+
+// Skip to next song
+void next_track() {
+    current_index = (current_index + 1) % playlist_count;
+    play_current_track();
 }
 
 int grabID() {
@@ -205,14 +258,15 @@ int main(void) {
 			}
 
 			if(sensor_data & PAJ_FORWARD){//play song
-				// system("mpg123 -q /home/pi/EEP522-Project/Playlist/Memories\ Of\ Tokyo-To\ -\ 07\ -\ Jet\ Set\ Classic\ \(Interlude\)\ \[OFFICIAL\].mp3");
-				char command[256];
-				snprintf(command, sizeof(command), "mpg123 -q /Playlist/*.mp3");
-				system(command);
+				// // system("mpg123 -q /home/pi/EEP522-Project/Playlist/Memories\ Of\ Tokyo-To\ -\ 07\ -\ Jet\ Set\ Classic\ \(Interlude\)\ \[OFFICIAL\].mp3");
+				// char command[256];
+				// snprintf(command, sizeof(command), "mpg123 -q /Playlist/*.mp3");
+				// system(command);
+				play_current_track();
 			}
 
-			else if(sensor_data & PAJ_RIGHT){//next song
-				system("f");
+			else if(sensor_data & PAJ_BACKWARD){//next song
+				next_track();
 			}
 
 			else if(sensor_data & PAJ_UP){//increase volume
