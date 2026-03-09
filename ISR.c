@@ -237,6 +237,8 @@ int main(void) {
 
 	// system("mpg123 -q ")
 
+	start_player();
+    load_playlist();
 
 	// Waste time but not CPU
 	while(1){
