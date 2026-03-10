@@ -360,7 +360,7 @@ int main(void) {
 					}
 
 					sensor_data=0;
-					// delay(50);
+					delay(200);
 				}
 
 			}
