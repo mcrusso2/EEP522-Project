@@ -246,7 +246,7 @@ int main(void) {
 	pipe(outpipe);
 	
 	pid_t pid = fork();
-	if(pid<0){
+	if(pid<0){//error for fork
 		perror("fork fail");
 		exit(1);
 		}
@@ -265,7 +265,7 @@ int main(void) {
 		exit(1);
 
 	}
-	else{
+	else{//parent
 		close(outpipe[0]);
 		close(inpipe[1]);
 
@@ -281,6 +281,7 @@ int main(void) {
 	// Waste time but not CPU
 	while(1){
 
+		// Check for messages from mpg123, wait for child process to send something
 		if(fgets(buf, sizeof(buf), mpg_out) != NULL) {
 
 			// fgets(buf, sizeof(buf), mpg_out);
@@ -345,10 +346,10 @@ int main(void) {
 			}
 
 		}
-
 		else{
-			perror("Failed to read from mpg123");
-			break;
+			//No messsage from mpg123
+			// Waste time but not CPU
+			delay(100);
 		}
 	}
 }
