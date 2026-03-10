@@ -137,6 +137,11 @@ void play_current_track() {
     fflush(mpg_in);
 }
 
+void stop_player(){
+	fprintf(mpg_in, "s\n");
+	fflush(mpg_in);
+}
+
 // Skip to next song
 void next_track() {
     current_index = (current_index + 1) % playlist_count;
@@ -318,7 +323,8 @@ int main(void) {
 					// char command[256];
 					// snprintf(command, sizeof(command), "mpg123 -q /Playlist/*.mp3");
 					// system(command);
-					play_current_track();
+					// play_current_track();
+					stop_player();
 				}
 
 				else if(sensor_data & PAJ_BACKWARD){//next song
