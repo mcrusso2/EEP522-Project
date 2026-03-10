@@ -99,6 +99,8 @@ char *playlist[MAX_TRACKS];
 int playlist_count = 0;
 int current_index = 0;
 
+int pause_flag = 0;
+
 
 void start_player() {
     // Start mpg123 in remote control mode
@@ -138,8 +140,10 @@ void play_current_track() {
 }
 
 void stop_player(){
+	pause_flag = pause_flag ? 0 : 1;// Toggle pause flag
 	fprintf(mpg_in, "s\n");
 	fflush(mpg_in);
+
 }
 
 // Skip to next song
@@ -292,7 +296,7 @@ int main(void) {
 
 			// fgets(buf, sizeof(buf), mpg_out);
 			// Check for @P messages
-			if (buf[0] == '@' && buf[1] == 'P') {
+			if (buf[0] == '@' && buf[1] == 'P' && pause_flag == 0) {
 				int status = -1;
 				sscanf(buf, "@P %d", &status);
 
