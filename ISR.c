@@ -277,6 +277,7 @@ int main(void) {
 
 	// start_player();
     load_playlist();
+	play_current_track();
 
 	// Waste time but not CPU
 	while(1){
