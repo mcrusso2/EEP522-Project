@@ -291,76 +291,84 @@ int main(void) {
 	// Waste time but not CPU
 	while(1){
 
-		// Check for messages from mpg123, wait for child process to send something
-		if(fgets(buf, sizeof(buf), mpg_out) != NULL) {
-
-			// fgets(buf, sizeof(buf), mpg_out);
-			// Check for @P messages
-			if (buf[0] == '@' && buf[1] == 'P' && pause_flag == 0) {
-				int status = -1;
-				sscanf(buf, "@P %d", &status);
-
-				if (status == 0) {
-					// Track ended ? load next
-					next_track();
-				}
-			}
-			
+		if(pause_flag){
 			int sensor_data = I2C_readU16( PAJ_INT_FLAG1);
-			if(sensor_data){
-				printf("Sensor data: %d\n", sensor_data);
-				switch (sensor_data){
-					case PAJ_UP:			    printf("Up\r\n");				break;
-					case PAJ_DOWN:				printf("Down\r\n");				break;
-					case PAJ_LEFT:				printf("Left\r\n");				break;
-					case PAJ_RIGHT:				printf("Right\r\n"); 			break;
-					case PAJ_FORWARD:			printf("Forward\r\n");			break;
-					case PAJ_BACKWARD:			printf("Backward\r\n"); 		break;
-					case PAJ_CLOCKWISE:			printf("Clockwise\r\n"); 		break;
-					case PAJ_COUNT_CLOCKWISE:	printf("AntiClockwise\r\n"); 	break;
-					case PAJ_WAVE:				printf("Wave\r\n"); 			break;
-					default: break;
-				}
-
-				if(sensor_data & PAJ_FORWARD){//play song
-					// // system("mpg123 -q /home/pi/EEP522-Project/Playlist/Memories\ Of\ Tokyo-To\ -\ 07\ -\ Jet\ Set\ Classic\ \(Interlude\)\ \[OFFICIAL\].mp3");
-					// char command[256];
-					// snprintf(command, sizeof(command), "mpg123 -q /Playlist/*.mp3");
-					// system(command);
-					// play_current_track();
-					stop_player();
-				}
-
-				else if(sensor_data & PAJ_BACKWARD){//next song
-					next_track();
-				}
-
-				else if(sensor_data & PAJ_UP){//increase volume
-					// wpctl set-volume 83 0.1+
-					// system("wpctl set-volume 83 0.1+");
-					//use btID instead of hardcoding 83
-					char command[256];
-					snprintf(command, sizeof(command), "wpctl set-volume %d 0.1+ -l 1.0", btID);
-					system(command);
-
-				}
-				else if(sensor_data & PAJ_DOWN){//decrease volume
-					// wpctl set-volume 83 0.05-
-					// system("wpctl set-volume 83 0.05-");
-					char command[256];
-					snprintf(command, sizeof(command), "wpctl set-volume %d 0.05-", btID);
-					system(command);
-				}
-
-				sensor_data=0;
-				// delay(50);
+			if(sensor_data & PAJ_FORWARD){
+				stop_player();
 			}
-
 		}
 		else{
-			//No messsage from mpg123
-			// Waste time but not CPU
-			delay(100);
+			// Check for messages from mpg123, wait for child process to send something
+			if(fgets(buf, sizeof(buf), mpg_out) != NULL) {
+
+				// fgets(buf, sizeof(buf), mpg_out);
+				// Check for @P messages
+				if (buf[0] == '@' && buf[1] == 'P') {
+					int status = -1;
+					sscanf(buf, "@P %d", &status);
+
+					if (status == 0) {
+						// Track ended ? load next
+						next_track();
+					}
+				}
+				
+				int sensor_data = I2C_readU16( PAJ_INT_FLAG1);
+				if(sensor_data){
+					printf("Sensor data: %d\n", sensor_data);
+					switch (sensor_data){
+						case PAJ_UP:			    printf("Up\r\n");				break;
+						case PAJ_DOWN:				printf("Down\r\n");				break;
+						case PAJ_LEFT:				printf("Left\r\n");				break;
+						case PAJ_RIGHT:				printf("Right\r\n"); 			break;
+						case PAJ_FORWARD:			printf("Forward\r\n");			break;
+						case PAJ_BACKWARD:			printf("Backward\r\n"); 		break;
+						case PAJ_CLOCKWISE:			printf("Clockwise\r\n"); 		break;
+						case PAJ_COUNT_CLOCKWISE:	printf("AntiClockwise\r\n"); 	break;
+						case PAJ_WAVE:				printf("Wave\r\n"); 			break;
+						default: break;
+					}
+
+					if(sensor_data & PAJ_FORWARD){//play song
+						// // system("mpg123 -q /home/pi/EEP522-Project/Playlist/Memories\ Of\ Tokyo-To\ -\ 07\ -\ Jet\ Set\ Classic\ \(Interlude\)\ \[OFFICIAL\].mp3");
+						// char command[256];
+						// snprintf(command, sizeof(command), "mpg123 -q /Playlist/*.mp3");
+						// system(command);
+						// play_current_track();
+						stop_player();
+					}
+
+					else if(sensor_data & PAJ_BACKWARD){//next song
+						next_track();
+					}
+
+					else if(sensor_data & PAJ_UP){//increase volume
+						// wpctl set-volume 83 0.1+
+						// system("wpctl set-volume 83 0.1+");
+						//use btID instead of hardcoding 83
+						char command[256];
+						snprintf(command, sizeof(command), "wpctl set-volume %d 0.1+ -l 1.0", btID);
+						system(command);
+
+					}
+					else if(sensor_data & PAJ_DOWN){//decrease volume
+						// wpctl set-volume 83 0.05-
+						// system("wpctl set-volume 83 0.05-");
+						char command[256];
+						snprintf(command, sizeof(command), "wpctl set-volume %d 0.05-", btID);
+						system(command);
+					}
+
+					sensor_data=0;
+					// delay(50);
+				}
+
+			}
+			else{
+				//No messsage from mpg123
+				// Waste time but not CPU
+				delay(100);
+			}
 		}
 	}
 }
