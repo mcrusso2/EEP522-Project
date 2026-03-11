@@ -1,19 +1,5 @@
-/* Demonstration C GPIO interrupt handling routine for Raspberry Pi
-	This is a modified code found at https://github.com/phil-lavin/raspberry-pi-gpio-interrupt
-	The program displays a notice whenever you:
-	-turn on the Raspberry Pi's pin 11 (apply 3.3V),
-	-turn the pin off.
+/* EEP522-Project/ISR.c
 
-	This routine uses wiringPi library (follow the installation instructions at wiringpi.com),
-	and should be compiled with a command:
-
-	gcc source_filename -o executable_filename -lwiringPi
-
-	You must have root privileges to run it - I don't know any workaround yet:
-	sudo ./executable_filename
-
-	Then the program displays a notice whenever you turn the GPIO pin 11 on and off.
-	It runs as an infinite loop and you can cancel it by pressing ctrl-C.
 */
 
 #include <stdio.h>
@@ -95,7 +81,7 @@ void pipelines(){
 
 int main(void) {
 
-	char buf[1024];
+	char buf[1024]; // Buffer to read messages from mpg123. Needed to autoplay next track
 
 	// Init  -- use the physical pin number on RPi P1 connector
 	wiringPiSetupPhys();
@@ -119,24 +105,22 @@ int main(void) {
 
 	pipelines();
 	
-
     load_playlist();
-	play_current_track();
+	play_current_track();//Start playing the first track. This is needed to avoid the fgets blocking issue when waiting for messages from mpg123. By starting the first track, we ensure that mpg123 is actively sending messages, allowing us to read them without blocking.
 
 	while(1){
 
 		if(pause_flag){
 			int sensor_data = I2C_readU16( PAJ_INT_FLAG1);
 			if(sensor_data & PAJ_FORWARD){
-				stop_player();
+				pause_player();
 			}
 		}
 		else{
 			// Check for messages from mpg123, wait for child process to send something
 			if(fgets(buf, sizeof(buf), mpg_out) != NULL) {
 
-				// fgets(buf, sizeof(buf), mpg_out);
-				// Check for @P messages
+				// Check for "@P 0" messages
 				if (buf[0] == '@' && buf[1] == 'P') {
 					int status = -1;
 					sscanf(buf, "@P %d", &status);
@@ -164,32 +148,27 @@ int main(void) {
 					}
 
 					if(sensor_data & PAJ_FORWARD){//pause or play song
-						stop_player();
+						pause_player();
 					}
 
 					else if(sensor_data & PAJ_BACKWARD){//next song
 						next_track();
 					}
 
-					else if(sensor_data & PAJ_UP){//increase volume
-						// wpctl set-volume 83 0.1+
-						// system("wpctl set-volume 83 0.1+");
-						//use btID instead of hardcoding 83
+					else if(sensor_data & PAJ_UP){//increase volume by 10%
 						char command[256];
 						snprintf(command, sizeof(command), "wpctl set-volume %d 0.1+ -l 1.0", btID);
 						system(command);
 
 					}
-					else if(sensor_data & PAJ_DOWN){//decrease volume
-						// wpctl set-volume 83 0.05-
-						// system("wpctl set-volume 83 0.05-");
+					else if(sensor_data & PAJ_DOWN){//decrease volume by 5%
 						char command[256];
 						snprintf(command, sizeof(command), "wpctl set-volume %d 0.05-", btID);
 						system(command);
 					}
 
-					sensor_data=0;
-					delay(100);
+					sensor_data=0;// Clear sensor data after processing to avoid repeated actions
+					delay(500);//Debounce delay to prevent multiple triggers from a single gesture
 				}
 
 			}

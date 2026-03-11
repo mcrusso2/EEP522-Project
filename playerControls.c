@@ -10,6 +10,7 @@ int current_index = 0;
 
 int pause_flag = 0;
 
+//Start the music player in remote control mode
 void start_player() {
 	// Start mpg123 in remote control mode
 	mpg_in = popen("mpg123 -R", "w");
@@ -19,6 +20,7 @@ void start_player() {
 	}
 }
 
+// Load playlist variable with the "Playlist" directory
 void load_playlist() {
 	DIR *dir;
 	struct dirent *entry;
@@ -42,13 +44,21 @@ void load_playlist() {
 
 }
 
+// Play the current track in the playlist
 void play_current_track() {
 	fprintf(mpg_in, "LOAD %s\n", playlist[current_index]);
 	fflush(mpg_in);
 }
 
-void stop_player(){
+// Pause or resume the player
+void pause_player(){
 	pause_flag = pause_flag ? 0 : 1;// Toggle pause flag
+	if(pause_flag){
+		printf("Pausing player\n");
+	}
+	else{
+		printf("Resuming player\n");
+	}
 	fprintf(mpg_in, "s\n");
 	fflush(mpg_in);
 

@@ -20,7 +20,7 @@ extern int pause_flag;
 void start_player();
 void load_playlist();
 void play_current_track();
-void stop_player();
+void pause_player();
 void next_track();
 
 #endif
