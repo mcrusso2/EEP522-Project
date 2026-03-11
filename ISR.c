@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <wiringPi.h>
 #include <unistd.h>
+#include <ctype.h>
 #include "PAJ7620U2.h"
 #include "playerControls.h"
 

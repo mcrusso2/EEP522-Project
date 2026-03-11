@@ -1,5 +1,14 @@
 #include "playerControls.h"
 
+FILE *mpg_in = NULL;
+FILE *mpg_out = NULL;
+
+
+char *playlist[MAX_TRACKS];
+int playlist_count = 0;
+int current_index = 0;
+
+int pause_flag = 0;
 
 void start_player() {
 	// Start mpg123 in remote control mode

@@ -1,20 +1,26 @@
+#ifndef PLAYER_CONTROLS_H
+#define PLAYER_CONTROLS_H
+
 #include <stdio.h>
 #include <dirent.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_TRACKS 256
 
-FILE *mpg_in = NULL;
-FILE *mpg_out = NULL;
+extern FILE *mpg_in;
+extern FILE *mpg_out;
 
-char *playlist[MAX_TRACKS];
-int playlist_count = 0;
-int current_index = 0;
+extern char *playlist[MAX_TRACKS];
+extern int playlist_count;
+extern int current_index;
 
-int pause_flag = 0;
+extern int pause_flag;
 
 void start_player();
 void load_playlist();
 void play_current_track();
 void stop_player();
 void next_track();
+
+#endif
